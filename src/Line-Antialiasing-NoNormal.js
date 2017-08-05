@@ -5,8 +5,9 @@ var VSHADER_SOURCE =
   'attribute vec4 a_Position;\n' +
   'attribute vec2 a_Normal;\n' +
   'attribute vec2 a_Direction;\n' +
+  'attribute float a_TextureNormal;\n' +
+  'varying float v_TextureNormal;\n' +
   'varying vec2 v_Direction;\n' +
-  'varying vec2 v_Normal;\n' +
   'uniform mat4 u_mvmatrix;\n' +
   'uniform mat4 u_pmatrix;\n' +
   'void main() {\n' +
@@ -15,18 +16,18 @@ var VSHADER_SOURCE =
   '  vec4 d = vec4(delta.xy, 0.0, 0.0);\n' +
   '  vec4 pos = u_pmatrix * u_mvmatrix * vec4((a_Position.xy + d.xy) / 1.0, 0, 1);\n' +
   '  gl_Position = pos;\n' +
-  '  v_Normal = a_Normal;\n' +
   '  v_Direction = a_Direction;\n' +
+  '  v_TextureNormal = a_TextureNormal;\n' +
   '}\n';
 
 // Fragment shader program
 var FSHADER_SOURCE =
   '#define feather 1.0\n' +
   '#define lineWidth (4.0 + 0.5)\n' +
-  'varying mediump vec2 v_Normal;\n' +
   'varying mediump vec2 v_Direction;\n' +
+  'varying mediump float v_TextureNormal;\n' +
   'void main() {\n' +
-  '  mediump float dist = length(v_Normal) * lineWidth;\n' +
+  '  mediump float dist = abs(v_TextureNormal) * lineWidth;\n' +
   '  mediump float alpha = dist < lineWidth - feather - feather? 1.0 :clamp(((lineWidth - dist) / feather / 2.0) , 0.0, 1.0);\n' +
   '  mediump float l = length(v_Direction);\n' +
   '  if (abs(l - 1.0) < 0.01) {\n' +
@@ -121,12 +122,12 @@ function initVertexBuffers(gl) {
   var direction = p2.sub(p1)._unit();
   var inverseDirection = direction.mult(-1);
   var vertices = new Float32Array([
-    10.0, 10.0, cwNormal.x, cwNormal.y, direction.x, direction.y,
-    10.0, 10.0, ccwNormal.x, ccwNormal.y, direction.x, direction.y,
-    100.0, 190.0, cwNormal.x, cwNormal.y, inverseDirection.x, inverseDirection.y,
-    10.0, 10.0, ccwNormal.x, ccwNormal.y, direction.x, direction.y,
-    100.0, 190.0, cwNormal.x, cwNormal.y, inverseDirection.x, inverseDirection.y,
-    100.0, 190.0, ccwNormal.x, ccwNormal.y, inverseDirection.x, inverseDirection.y
+    10.0, 10.0, cwNormal.x, cwNormal.y, direction.x, direction.y, -1.0,
+    10.0, 10.0, ccwNormal.x, ccwNormal.y, direction.x, direction.y, 1.0,
+    100.0, 190.0, cwNormal.x, cwNormal.y, inverseDirection.x, inverseDirection.y, -1.0,
+    10.0, 10.0, ccwNormal.x, ccwNormal.y, direction.x, direction.y, -1.0,
+    100.0, 190.0, cwNormal.x, cwNormal.y, inverseDirection.x, inverseDirection.y, 1.0,
+    100.0, 190.0, ccwNormal.x, ccwNormal.y, inverseDirection.x, inverseDirection.y, -1.0
   ]);
   var n = 4; // The number of vertices
 
@@ -154,22 +155,31 @@ function initVertexBuffers(gl) {
     return -1;
   }
 
-
   var a_Direction = gl.getAttribLocation(gl.program, "a_Direction");
   if (a_Direction < 0) {
     console.log('Failed to get the storage location of a_Normal');
     return -1;
   }
 
+  var a_TextureNormal = gl.getAttribLocation(gl.program, "a_TextureNormal");
+  if (a_TextureNormal < 0) {
+    console.log('Failed to get the storage location of a_Normal');
+    return -1;
+  }
+
+
   // Assign the buffer object to a_Position variable
-  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 6, 0);
+  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 7, 0);
   // Enable the assignment to a_Position variable
   gl.enableVertexAttribArray(a_Position);
 
-  gl.vertexAttribPointer(a_Normal, 2, gl.FLOAT, false, FSIZE * 6, 2 * FSIZE);
+  gl.vertexAttribPointer(a_Normal, 2, gl.FLOAT, false, FSIZE * 7, 2 * FSIZE);
   gl.enableVertexAttribArray(a_Normal);
 
-  gl.vertexAttribPointer(a_Direction, 2, gl.FLOAT, false, FSIZE * 6, 4 * FSIZE);
+  gl.vertexAttribPointer(a_Direction, 2, gl.FLOAT, false, FSIZE * 7, 4 * FSIZE);
   gl.enableVertexAttribArray(a_Direction);
+
+  gl.vertexAttribPointer(a_TextureNormal, 1, gl.FLOAT, false, FSIZE * 7, 6 * FSIZE);
+  gl.enableVertexAttribArray(a_TextureNormal);
   return n;
 }
