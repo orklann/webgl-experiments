@@ -1,7 +1,6 @@
 // HelloQuad.js (c) 2012 matsuda
 // Vertex shader program
 var VSHADER_SOURCE =
-  '#define lineWidth (4.0 + 1.0)\n' +
   'attribute vec4 a_Position;\n' +
   'attribute vec2 a_Normal;\n' +
   'attribute vec2 a_Direction;\n' +
@@ -9,8 +8,10 @@ var VSHADER_SOURCE =
   'varying vec2 v_Normal;\n' +
   'uniform mat4 u_mvmatrix;\n' +
   'uniform mat4 u_pmatrix;\n' +
+  'uniform mediump float u_lineWidth;\n' +
   'void main() {\n' +
   //'  const mat4 pMatrix = mat4(0.005 ,0,0,0, 0, -0.005,0,0, 0,0,1.0,1.0, -1.0,1.0,0,0);\n' +
+  '  mediump float lineWidth = u_lineWidth + 1.0;\n' +
   '  vec4 delta = vec4(a_Normal * vec2(lineWidth/2.0), 0, 0);\n' +
   '  vec4 d = vec4(delta.xy, 0.0, 0.0);\n' +
   '  vec4 pos = u_pmatrix * u_mvmatrix * vec4((a_Position.xy + d.xy) / 1.0, 0, 1);\n' +
@@ -22,10 +23,11 @@ var VSHADER_SOURCE =
 // Fragment shader program
 var FSHADER_SOURCE =
   '#define feather 1.0\n' +
-  '#define lineWidth (4.0 + 0.5)\n' +
   'varying mediump vec2 v_Normal;\n' +
   'varying mediump vec2 v_Direction;\n' +
+  'uniform mediump float u_lineWidth;\n' +
   'void main() {\n' +
+  '  mediump float lineWidth = u_lineWidth + 0.5;\n' +
   '  mediump float dist = length(v_Normal) * lineWidth;\n' +
   '  mediump float alpha = dist < lineWidth - feather - feather? 1.0 :clamp(((lineWidth - dist) / feather / 2.0) , 0.0, 1.0);\n' +
   '  mediump float l = length(v_Direction);\n' +
@@ -91,10 +93,14 @@ function main() {
     return;
   }
 
+  var lineWidth = 4.0;
   var u_pmatrix = gl.getUniformLocation(gl.program, "u_pmatrix");
   var u_mvmatrix = gl.getUniformLocation(gl.program, "u_mvmatrix");
+  var u_lineWidth = gl.getUniformLocation(gl.program, "u_lineWidth");
   gl.uniformMatrix4fv(u_pmatrix, false, pMatrix);
   gl.uniformMatrix4fv(u_mvmatrix, false, mvMatrix);
+  gl.uniform1f(u_lineWidth, lineWidth);
+
   // Write the positions of vertices to a vertex shader
   var n = initVertexBuffers(gl);
   if (n < 0) {
@@ -136,6 +142,7 @@ function initVertexBuffers(gl) {
     console.log('Failed to create the buffer object');
     return -1;
   }
+
   var FSIZE = vertices.BYTES_PER_ELEMENT;
   // Bind the buffer object to target
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
