@@ -3,39 +3,30 @@
 var VSHADER_SOURCE =
   'attribute vec4 a_Position;\n' +
   'attribute vec2 a_Normal;\n' +
-  'attribute vec2 a_Direction;\n' +
-  'varying vec2 v_Direction;\n' +
   'varying vec2 v_Normal;\n' +
   'uniform mat4 u_mvmatrix;\n' +
   'uniform mat4 u_pmatrix;\n' +
   'uniform mediump float u_lineWidth;\n' +
   'void main() {\n' +
-  //'  const mat4 pMatrix = mat4(0.005 ,0,0,0, 0, -0.005,0,0, 0,0,1.0,1.0, -1.0,1.0,0,0);\n' +
   '  mediump float lineWidth = u_lineWidth + 1.0;\n' +
-  '  vec4 delta = vec4(a_Normal * vec2(lineWidth/2.0), 0, 0);\n' +
-  '  vec4 d = vec4(delta.xy, 0.0, 0.0);\n' +
-  '  vec4 pos = u_pmatrix * u_mvmatrix * vec4((a_Position.xy + d.xy) / 1.0, 0, 1);\n' +
+  '  vec4 pos = u_pmatrix * u_mvmatrix * vec4(a_Position.xy / 1.0, 0, 1);\n' +
   '  gl_Position = pos;\n' +
   '  v_Normal = a_Normal;\n' +
-  '  v_Direction = a_Direction;\n' +
   '}\n';
 
 // Fragment shader program
 var FSHADER_SOURCE =
   '#define feather 1.0\n' +
   'varying mediump vec2 v_Normal;\n' +
-  'varying mediump vec2 v_Direction;\n' +
   'uniform mediump float u_lineWidth;\n' +
   'void main() {\n' +
   '  mediump float lineWidth = u_lineWidth + 0.5;\n' +
   '  mediump float dist = length(v_Normal) * lineWidth;\n' +
   '  mediump float alpha = dist < lineWidth - feather - feather? 1.0 :clamp(((lineWidth - dist) / feather / 2.0) , 0.0, 1.0);\n' +
-  '  mediump float l = length(v_Direction);\n' +
-  '  if (abs(l - 1.0) < 0.01) {\n' +
-  '    alpha = abs(l - 1.0) * 10.0 + 0.2;\n' +
-  '  }\n' +
   '  gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);\n' +
   '}\n';
+
+var lineWidth = 4.0;
 
 function main() {
   // Draw 2d canvas with testing
@@ -93,7 +84,6 @@ function main() {
     return;
   }
 
-  var lineWidth = 4.0;
   var u_pmatrix = gl.getUniformLocation(gl.program, "u_pmatrix");
   var u_mvmatrix = gl.getUniformLocation(gl.program, "u_mvmatrix");
   var u_lineWidth = gl.getUniformLocation(gl.program, "u_lineWidth");
@@ -115,26 +105,55 @@ function main() {
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   // Draw the rectangle
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
+  gl.drawArrays(gl.TRIANGLES, 0, 12);
 }
 
 function initVertexBuffers(gl) {
-  var p1 = new Point(10.0, 10.0);
-  var p2 = new Point(100.0, 190.0);
+  var p1 = new Point(50.0, 20.0);
+  var p2 = new Point(120.0, 190.0);
+  var p3 = new Point(300.0, 100.0);
 
-  var cwNormal = p2.sub(p1)._unit()._perp();
-  var ccwNormal = cwNormal.mult(-1);
-  var direction = p2.sub(p1)._unit();
-  var inverseDirection = direction.mult(-1);
+  var cwNormal_p1p2 = p2.sub(p1)._unit()._perp();
+  var ccwNormal_p1p2 = cwNormal_p1p2.mult(-1);
+  var direction_p1p2 = p2.sub(p1)._unit();
+  var inverseDirection_p1p2 = direction_p1p2.mult(-1);
+
+  var cwNormal_p2p3 = p3.sub(p2)._unit()._perp();
+  var ccwNormal_p2p3 = cwNormal_p2p3.mult(-1);
+  var direction_p2p3 = p3.sub(p2)._unit();
+  var inverseDirection_p2p3 = direction_p2p3.mult(-1);
+
+  var joinNormal = cwNormal_p1p2.add(cwNormal_p2p3);
+  var cosHalfAngle = (cwNormal_p2p3.x * joinNormal.x) + (cwNormal_p2p3.y * joinNormal.y);
+  var miterLengthRatio = 1 / cosHalfAngle;
+
+  // Calculate 6 points to form 2 lines
+  var startPoint1 = p1.add(cwNormal_p1p2.mult(lineWidth / 2.0));
+  var startPoint2 = p1.add(ccwNormal_p1p2.mult(lineWidth / 2.0));
+  var miterVector = joinNormal.mult(miterLengthRatio * lineWidth / 2.0);
+  var extrudePointUp = p2.add(miterVector);
+  var extrudePointDown = p2.add(miterVector.mult(-1));
+  var endPoint1 = p3.add(cwNormal_p2p3.mult(lineWidth / 2.0));
+  var endPoint2 = p3.add(ccwNormal_p2p3.mult(lineWidth / 2.0));
+
   var vertices = new Float32Array([
-    10.0, 10.0, cwNormal.x, cwNormal.y, direction.x, direction.y,
-    10.0, 10.0, ccwNormal.x, ccwNormal.y, direction.x, direction.y,
-    100.0, 190.0, cwNormal.x, cwNormal.y, inverseDirection.x, inverseDirection.y,
-    10.0, 10.0, ccwNormal.x, ccwNormal.y, direction.x, direction.y,
-    100.0, 190.0, cwNormal.x, cwNormal.y, inverseDirection.x, inverseDirection.y,
-    100.0, 190.0, ccwNormal.x, ccwNormal.y, inverseDirection.x, inverseDirection.y
+    // Line 1
+    startPoint1.x, startPoint1.y, cwNormal_p1p2.x, cwNormal_p1p2.y,
+    startPoint2.x, startPoint2.y, ccwNormal_p1p2.x, ccwNormal_p1p2.y,
+    extrudePointDown.x, extrudePointDown.y, ccwNormal_p1p2.x, ccwNormal_p1p2.y,
+    extrudePointDown.x, extrudePointDown.y, ccwNormal_p1p2.x, ccwNormal_p1p2.y,
+    extrudePointUp.x, extrudePointUp.y, cwNormal_p1p2.x, cwNormal_p1p2.y,
+    startPoint1.x, startPoint1.y, cwNormal_p1p2.x, cwNormal_p1p2.y,
+
+    // Line 2
+    endPoint1.x, endPoint1.y, cwNormal_p2p3.x, cwNormal_p2p3.y,
+    endPoint2.x, endPoint2.y, ccwNormal_p2p3.x, ccwNormal_p2p3.y,
+    extrudePointDown.x, extrudePointDown.y, ccwNormal_p2p3.x, ccwNormal_p2p3.y,
+    extrudePointDown.x, extrudePointDown.y, ccwNormal_p2p3.x, ccwNormal_p2p3.y,
+    extrudePointUp.x, extrudePointUp.y, cwNormal_p2p3.x, cwNormal_p2p3.y,
+    endPoint1.x, endPoint1.y, cwNormal_p2p3.x, cwNormal_p2p3.y
   ]);
-  var n = 4; // The number of vertices
+  var n = 12; // The number of vertices
 
   // Create a buffer object
   var vertexBuffer = gl.createBuffer();
@@ -161,22 +180,21 @@ function initVertexBuffers(gl) {
     return -1;
   }
 
-
+  /*
   var a_Direction = gl.getAttribLocation(gl.program, "a_Direction");
   if (a_Direction < 0) {
     console.log('Failed to get the storage location of a_Normal');
     return -1;
   }
+  */
 
   // Assign the buffer object to a_Position variable
-  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 6, 0);
+  gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 4, 0);
   // Enable the assignment to a_Position variable
   gl.enableVertexAttribArray(a_Position);
 
-  gl.vertexAttribPointer(a_Normal, 2, gl.FLOAT, false, FSIZE * 6, 2 * FSIZE);
+  gl.vertexAttribPointer(a_Normal, 2, gl.FLOAT, false, FSIZE * 4, FSIZE * 2);
   gl.enableVertexAttribArray(a_Normal);
 
-  gl.vertexAttribPointer(a_Direction, 2, gl.FLOAT, false, FSIZE * 6, 4 * FSIZE);
-  gl.enableVertexAttribArray(a_Direction);
   return n;
 }
