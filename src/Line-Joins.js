@@ -111,7 +111,7 @@ function main() {
 function initVertexBuffers(gl) {
   var p1 = new Point(50.0, 20.0);
   var p2 = new Point(120.0, 190.0);
-  var p3 = new Point(300.0, 100.0);
+  var p3 = new Point(200.0, 20.0);
 
   var cwNormal_p1p2 = p2.sub(p1)._unit()._perp();
   var ccwNormal_p1p2 = cwNormal_p1p2.mult(-1);
