@@ -8,7 +8,7 @@ var VSHADER_SOURCE =
   'uniform mat4 u_pmatrix;\n' +
   'uniform mediump float u_lineWidth;\n' +
   'void main() {\n' +
-  '  mediump float lineWidth = u_lineWidth + 1.0;\n' +
+  '  mediump float lineWidth = u_lineWidth + 1.0;\n' + // Add 1 pixel to line width for better looking
   '  vec4 pos = u_pmatrix * u_mvmatrix * vec4(a_Position.xy / 1.0, 0, 1);\n' +
   '  gl_Position = pos;\n' +
   '  v_Normal = a_Normal;\n' +
