@@ -1,30 +1,30 @@
 // HelloQuad.js (c) 2012 matsuda
 // Vertex shader program
-var VSHADER_SOURCE =
-  'attribute vec4 a_Position;\n' +
-  'attribute vec2 a_Normal;\n' +
-  'varying vec2 v_Normal;\n' +
-  'uniform mat4 u_mvmatrix;\n' +
-  'uniform mat4 u_pmatrix;\n' +
-  'uniform mediump float u_lineWidth;\n' +
-  'void main() {\n' +
-  '  mediump float lineWidth = u_lineWidth + 1.0;\n' + // Add 1 pixel to line width for better looking
-  '  vec4 pos = u_pmatrix * u_mvmatrix * vec4(a_Position.xy / 1.0, 0, 1);\n' +
-  '  gl_Position = pos;\n' +
-  '  v_Normal = a_Normal;\n' +
-  '}\n';
+var VSHADER_SOURCE = `
+  attribute vec4 a_Position;
+  attribute vec2 a_Normal;
+  varying vec2 v_Normal;
+  uniform mat4 u_mvmatrix;
+  uniform mat4 u_pmatrix;
+  uniform mediump float u_lineWidth;
+  void main() {
+    mediump float lineWidth = u_lineWidth + 1.0; // Add 1 pixel to line width for better looking
+    vec4 pos = u_pmatrix * u_mvmatrix * vec4(a_Position.xy / 1.0, 0, 1);
+    gl_Position = pos;
+    v_Normal = a_Normal;
+  }`;
 
 // Fragment shader program
-var FSHADER_SOURCE =
-  '#define feather 1.0\n' +
-  'varying mediump vec2 v_Normal;\n' +
-  'uniform mediump float u_lineWidth;\n' +
-  'void main() {\n' +
-  '  mediump float lineWidth = u_lineWidth + 0.5;\n' +
-  '  mediump float dist = length(v_Normal) * lineWidth;\n' +
-  '  mediump float alpha = dist < lineWidth - feather - feather? 1.0 :clamp(((lineWidth - dist) / feather / 2.0) , 0.0, 1.0);\n' +
-  '  gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);\n' +
-  '}\n';
+var FSHADER_SOURCE = `
+  #define feather 1.0
+  varying mediump vec2 v_Normal;
+  uniform mediump float u_lineWidth;
+  void main() {
+    mediump float lineWidth = u_lineWidth + 0.5;
+    mediump float dist = length(v_Normal) * lineWidth;
+    mediump float alpha = dist < lineWidth - feather - feather? 1.0 :clamp(((lineWidth - dist) / feather / 2.0) , 0.0, 1.0);
+    gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
+  }`;
 
 var lineWidth = 4.0;
 
