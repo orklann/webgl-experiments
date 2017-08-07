@@ -41,9 +41,13 @@ function main() {
 
   ctx.beginPath();
   ctx.moveTo(20, 20);
-  ctx.lineTo(190, 20);
+  ctx.beginPath();
+  ctx.arc(100, 75, 50, 0, 1.5 * Math.PI);
+  ctx.lineTo(200, 100);
+  ctx.lineTo(250, 250);
+  //ctx.lineTo(100, 75);
   ctx.lineWidth = 4.0;
-  ctx.stroke();
+  ctx.fill();
 
   // Retrieve <canvas> element
   var canvas = document.getElementById('webgl');
