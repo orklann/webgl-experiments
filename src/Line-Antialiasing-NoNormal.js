@@ -30,8 +30,7 @@ var FSHADER_SOURCE =
   '  mediump float dist = abs(v_TextureNormal) * lineWidth;\n' +
   '  mediump float alpha = dist < lineWidth - feather - feather? 1.0 :clamp(((lineWidth - dist) / feather / 2.0) , 0.0, 1.0);\n' +
   '  mediump float l = length(v_Direction);\n' +
-  '  if (abs(l - 1.0) < 0.01) {\n' +
-  '    alpha = abs(l - 1.0) * 10.0 + 0.2;\n' +
+  '  if (abs(l - 1.0) < 0.01) {\n' + '    alpha = abs(l - 1.0) * 10.0 + 0.2;\n' +
   '  }\n' +
   '  gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);\n' +
   '}\n';

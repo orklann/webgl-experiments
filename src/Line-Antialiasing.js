@@ -57,7 +57,7 @@ function main() {
 
   // Get the rendering context for WebGL
   var gl = canvas.getContext("experimental-webgl", {
-    antialias: false
+    antialias: true
   });
 
   if (!gl) {
