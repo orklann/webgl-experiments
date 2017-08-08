@@ -23,7 +23,7 @@ function main() {
   var canvas = document.getElementById('webgl');
 
   // Get the rendering context for WebGL
-  var gl = canvas.getContext("experimental-webgl", {
+  var gl = canvas.getContext("webgl", {
     antialias: true
   });
 
