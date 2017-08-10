@@ -12,14 +12,18 @@ var VSHADER_SOURCE = `
 
 // Fragment shader program
 var FSHADER_SOURCE = `
-  #define feather 1.0
+  #define feather 0.5
+  precision mediump float;
   uniform mediump vec2 u_center;
   void main() {
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    vec2 p = vec2(gl_FragCoord.x, gl_FragCoord.y);
+    float dist = distance(p, u_center);
+    float alpha = dist >= 50.0 ? 0.0 : clamp(abs(dist - 50.0) / 1.0, 0.0, 1.0);
+    gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
   }`;
 
 var radius = 50.0;
-var center = new Float32Array([100.0, 75.0]);
+var center = new Point(100.0, 200.0);
 
 function main() {
   // Draw 2d canvas with testing
@@ -78,7 +82,7 @@ function main() {
   var u_center = gl.getUniformLocation(gl.program, "u_center");
   gl.uniformMatrix4fv(u_pmatrix, false, pMatrix);
   gl.uniformMatrix4fv(u_mvmatrix, false, mvMatrix);
-  gl.uniform2fv(u_center, center);
+  gl.uniform2f(u_center, center.x, 400.0 - center.y);
 
   // Write the positions of vertices to a vertex shader
   var n = initVertexBuffers(gl);
@@ -98,8 +102,7 @@ function main() {
 }
 
 function initVertexBuffers(gl) {
-  var p1 = new Point(100.0, 75.0);
-
+  var p1 = center;
 
   var vP1P2 = new Point(radius, 0);
   var vP1P3 = new Point(0, -1 * radius);
