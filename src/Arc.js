@@ -84,6 +84,9 @@ function main() {
   var u_radius = gl.getUniformLocation(gl.program, "u_radius");
   gl.uniformMatrix4fv(u_pmatrix, false, pMatrix);
   gl.uniformMatrix4fv(u_mvmatrix, false, mvMatrix);
+
+  // 400 = canvas height, need to translate origin to lower left
+  // because gl_FragCoord is base on lower left origin
   gl.uniform2f(u_center, center.x, 400.0 - center.y);
   gl.uniform1f(u_radius, radius);
 
