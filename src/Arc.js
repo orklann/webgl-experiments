@@ -87,7 +87,8 @@ function main() {
 
   // 400 = canvas height, need to translate origin to lower left
   // because gl_FragCoord is base on lower left origin
-  gl.uniform2f(u_center, center.x, 400.0 - center.y);
+  gl.uniform2f(u_center, center.x, gl.canvas.height - center.y);
+
   gl.uniform1f(u_radius, radius);
 
   // Write the positions of vertices to a vertex shader
