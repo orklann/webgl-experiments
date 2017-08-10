@@ -34,18 +34,14 @@ function main() {
 
   var ctx = _2dCanvas.getContext("2d");
   ctx.beginPath();
-  ctx.moveTo(10, 10);
-  ctx.lineTo(100, 190);
-  ctx.lineWidth = 4.0;
+  ctx.arc(100, 75, 50, 0, 1.5 * Math.PI, true);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(20, 20);
-  ctx.lineTo(190, 20);
-  ctx.lineWidth = 4.0;
-  ctx.stroke();
+  ctx.moveTo(100, 200);
+  ctx.arc(100, 200, 50, 0, 1.5 * Math.PI, true);
+  ctx.fill();
 
-  // Retrieve <canvas> element
   var canvas = document.getElementById('webgl');
 
   // Get the rendering context for WebGL
