@@ -15,10 +15,11 @@ var FSHADER_SOURCE = `
   #define feather 0.5
   precision mediump float;
   uniform mediump vec2 u_center;
+  uniform mediump float u_radius;
   void main() {
     vec2 p = vec2(gl_FragCoord.x, gl_FragCoord.y);
     float dist = distance(p, u_center);
-    float alpha = dist >= 50.0 ? 0.0 : clamp(abs(dist - 50.0) / 1.0, 0.0, 1.0);
+    float alpha = dist > u_radius ? 0.0 : clamp(abs(dist - u_radius) / 1.0, 0.0, 1.0);
     gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
   }`;
 
@@ -80,9 +81,11 @@ function main() {
   var u_pmatrix = gl.getUniformLocation(gl.program, "u_pmatrix");
   var u_mvmatrix = gl.getUniformLocation(gl.program, "u_mvmatrix");
   var u_center = gl.getUniformLocation(gl.program, "u_center");
+  var u_radius = gl.getUniformLocation(gl.program, "u_radius");
   gl.uniformMatrix4fv(u_pmatrix, false, pMatrix);
   gl.uniformMatrix4fv(u_mvmatrix, false, mvMatrix);
   gl.uniform2f(u_center, center.x, 400.0 - center.y);
+  gl.uniform1f(u_radius, radius);
 
   // Write the positions of vertices to a vertex shader
   var n = initVertexBuffers(gl);
