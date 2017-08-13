@@ -16,14 +16,25 @@ var FSHADER_SOURCE = `
   precision mediump float;
   uniform mediump vec2 u_center;
   uniform mediump float u_radius;
+  uniform mediump float u_lineWidth;
   void main() {
     vec2 p = vec2(gl_FragCoord.x, gl_FragCoord.y);
     float dist = distance(p, u_center);
-    float alpha = dist > u_radius ? 0.0 : clamp(abs(dist - u_radius) / 1.0, 0.0, 1.0);
+
+    float halfLineWidth = u_lineWidth / 2.0 + 0.5;
+    float d = abs(dist - (u_radius - halfLineWidth));
+    float alpha = 0.0;
+    if (d < halfLineWidth){
+      alpha = clamp(abs(d - halfLineWidth) / 1.0, 0.0, 1.0);
+    } else {
+      alpha = 0.0;
+    }
+
     gl_FragColor = vec4(0.0, 0.0, 0.0, alpha);
   }`;
 
 var radius = 50.0;
+var lineWidth = 3.0;
 var center = new Point(100.0, 200.0);
 
 function main() {
@@ -32,6 +43,7 @@ function main() {
 
   var ctx = _2dCanvas.getContext("2d");
   ctx.beginPath();
+  ctx.lineWidth = lineWidth;
   ctx.arc(100, 75, 50, 0, 1.5 * Math.PI, true);
   ctx.stroke();
 
@@ -82,6 +94,7 @@ function main() {
   var u_mvmatrix = gl.getUniformLocation(gl.program, "u_mvmatrix");
   var u_center = gl.getUniformLocation(gl.program, "u_center");
   var u_radius = gl.getUniformLocation(gl.program, "u_radius");
+  var u_lineWidth = gl.getUniformLocation(gl.program, "u_lineWidth");
   gl.uniformMatrix4fv(u_pmatrix, false, pMatrix);
   gl.uniformMatrix4fv(u_mvmatrix, false, mvMatrix);
 
@@ -90,6 +103,8 @@ function main() {
   gl.uniform2f(u_center, center.x, gl.canvas.height - center.y);
 
   gl.uniform1f(u_radius, radius);
+
+  gl.uniform1f(u_lineWidth, lineWidth);
 
   // Write the positions of vertices to a vertex shader
   var n = initVertexBuffers(gl);
