@@ -35,7 +35,7 @@ var FSHADER_SOURCE = `
 
 var radius = 50.0;
 var lineWidth = 3.0;
-var center = new Point(100.0, 200.0);
+var center = new Point(100.0, 75.0);
 
 function main() {
   // Draw 2d canvas with testing
