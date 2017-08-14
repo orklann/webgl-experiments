@@ -22,7 +22,7 @@ var FSHADER_SOURCE = `
     float dist = distance(p, u_center);
 
     float halfLineWidth = u_lineWidth / 2.0 + 0.5;
-    float d = abs(dist - (u_radius - halfLineWidth));
+    float d = abs(dist - u_radius);
     float alpha = 0.0;
     if (d < halfLineWidth){
       alpha = clamp(abs(d - halfLineWidth) / 1.0, 0.0, 1.0);
@@ -34,7 +34,7 @@ var FSHADER_SOURCE = `
   }`;
 
 var radius = 50.0;
-var lineWidth = 3.0;
+var lineWidth = 20.0;
 var center = new Point(100.0, 75.0);
 
 function main() {
@@ -126,8 +126,8 @@ function main() {
 function initVertexBuffers(gl) {
   var p1 = center;
 
-  var vP1P2 = new Point(radius, 0);
-  var vP1P3 = new Point(0, -1 * radius);
+  var vP1P2 = new Point(radius + lineWidth, 0);
+  var vP1P3 = new Point(0, -1 * (radius + lineWidth));
 
   var p2 = p1.add(vP1P2);
   var p3 = p1.add(vP1P3);
