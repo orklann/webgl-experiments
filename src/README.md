@@ -11,3 +11,5 @@ Method #2 is better than #2.
 2 Interpolating alpha (0.0 to 1.0) between `lineWidth - feather` and `lineWidth + feather`
   Resulting better alphas
   Demo: Line-Anitialiasing.html
+
+# Todo
