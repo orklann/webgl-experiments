@@ -36,7 +36,7 @@ function main() {
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(100, 200);
+  //ctx.moveTo(100, 200);
   ctx.arc(100, 200, 50, 0, 1.5 * Math.PI, true);
   ctx.fill();
 
@@ -44,7 +44,7 @@ function main() {
 
   // Get the rendering context for WebGL
   var gl = canvas.getContext("experimental-webgl", {
-    antialias: false
+    antialias: true
   });
 
   if (!gl) {
@@ -117,15 +117,16 @@ function initVertexBuffers(gl) {
   var p2 = p1.add(vP1P2);
   var p3 = p1.add(vP1P3);
   var p4 = p2.add(vP1P3);
+  var p5 = new Point((p2.x + p3.x) / 2, (p2.y + p3.y) / 2);
 
   var vertices = new Float32Array([
     // triangle 1
-    p1.x, p1.y,
+    p5.x, p5.y,
     p2.x, p2.y,
     p4.x, p4.y,
 
     // triangle 2
-    p1.x, p1.y,
+    p5.x, p5.y,
     p3.x, p3.y,
     p4.x, p4.y,
   ]);
