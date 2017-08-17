@@ -36,7 +36,6 @@ function main() {
   ctx.stroke();
 
   ctx.beginPath();
-  //ctx.moveTo(100, 200);
   ctx.arc(100, 200, 50, 0, 1.5 * Math.PI, true);
   ctx.fill();
 
